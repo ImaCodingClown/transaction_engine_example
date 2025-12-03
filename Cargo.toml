@@ -1,0 +1,6 @@
+[package]
+name = "kraken_transaction_engine_take_home_example"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
