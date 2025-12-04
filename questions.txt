@@ -1,0 +1,1 @@
+1. What happens when dispute is raised after user withdrew money?
