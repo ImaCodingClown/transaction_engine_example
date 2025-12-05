@@ -43,7 +43,7 @@ cargo build --release
 cargo run -- path/to/transactions.csv
 ```
 
-Processing stops on the first transaction error.
+In normal mode, the engine continues processing transactions and silently skips any that fail due to business logic errors (e.g., insufficient funds). File parsing errors still halt processing.
 
 ### Batch Mode
 
@@ -51,7 +51,7 @@ Processing stops on the first transaction error.
 cargo run -- path/to/transactions.csv --batch
 ```
 
-In batch mode, the engine continues processing transactions even when individual operations fail (e.g., insufficient funds). Failed transactions are silently skipped.
+In batch mode, processing halts immediately on the first transaction error with exit code 1.
 
 ## CSV Format
 
@@ -292,7 +292,7 @@ cargo test test_dispute_and_chargeback
 ### Test Coverage Summary
 
 - 30+ unit tests covering all transaction types
-- Normal mode (fails on error) and batch mode (continues on error) tested
+- Normal mode (continues on error) and batch mode (halts on error) tested
 - Edge cases: locked accounts, insufficient funds, invalid transitions
 - Multi-client scenarios
 - 4 decimal place precision verification
@@ -301,22 +301,41 @@ cargo test test_dispute_and_chargeback
 
 ### Normal Mode
 
-Processing halts on first error and returns error to application.
+**Processing continues despite transaction errors. Failed transactions are silently skipped.**
 
+- ✅ Continues to next transaction on business logic errors
+- ✅ File parsing errors still halt (malformed CSV)
+- ✅ Returns exit code 0 if file parsing succeeds
+- ✅ Processes all valid transactions
+
+**Use cases:**
+- Production data with occasional invalid records
+- Data migration with lenient validation
+- Non-critical transaction processing
+
+Example:
 ```bash
 $ cargo run -- transactions.csv
-Error: NotEnoughFunds
+# Skips failed transactions, outputs successful accounts
+client,available,held,total,locked
+1,50.0000,0.0000,50.0000,false
 ```
 
 ### Batch Mode
 
-Processing continues despite errors. Failed transactions are skipped.
+**Processing halts on the first transaction error with exit code 1.**
 
-```bash
-$ cargo run -- transactions.csv --batch
-# Continues processing, silently skips failed transactions
-# Outputs final successful account states
-```
+- ✗ Stops immediately on any business logic error
+- ✗ File parsing errors also halt
+- ✓ Returns exit code 1 on failure
+- ✓ Enforces strict validation
+
+**Use cases:**
+- Critical financial operations requiring all-or-nothing
+- Testing and validation scenarios
+- Strict compliance requirements
+
+Example:
 
 ### Error Types
 
