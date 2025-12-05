@@ -1,28 +1,17 @@
 use std::collections::HashMap;
 
-use serde::Serializer;
 use serde_derive::{Deserialize, Serialize};
 
 use crate::{
     error::AppError,
     models::transaction::{TransactionRecord, TransactionStatus, TransactionType},
 };
-fn serialize_f64_4dp<S>(value: &f64, serializer: S) -> Result<S::Ok, S::Error>
-where
-    S: Serializer,
-{
-    let rounded = (value * 10000.0).round() / 10000.0;
-    serializer.serialize_f64(rounded)
-}
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct ClientAccount {
     pub client: u16,
-    #[serde(serialize_with = "serialize_f64_4dp")]
     pub available: f64,
-    #[serde(serialize_with = "serialize_f64_4dp")]
     pub held: f64,
-    #[serde(serialize_with = "serialize_f64_4dp")]
     pub total: f64,
     pub locked: bool,
 }
